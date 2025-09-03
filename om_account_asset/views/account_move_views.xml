@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- METHOD 1: Target product_id field in invoice lines (Most Reliable) -->
+        <record id="view_move_form_inherit_asset_category" model="ir.ui.view">
+            <field name="name">account.move.form.asset.category</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='product_id']" position="after">
+                    <field name="asset_category_id"
+                           string="Asset Category"
+                           domain="[('type', '=', 'purchase')]"
+                           context="{'default_type': 'purchase'}"
+                           column_invisible="parent.move_type not in ('in_invoice', 'in_receipt')"
+                           optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- METHOD 2: Target name field as fallback -->
+        <!-- Comment out this method initially, enable only if Method 1 fails
+        <record id="view_move_form_inherit_asset_category_v2" model="ir.ui.view">
+            <field name="name">account.move.form.asset.category.v2</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='name']" position="after">
+                    <field name="asset_category_id"
+                           string="Asset Category"
+                           domain="[('type', '=', 'purchase')]"
+                           context="{'default_type': 'purchase'}"
+                           column_invisible="parent.move_type not in ('in_invoice', 'in_receipt')"
+                           optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+        -->
+
+        <!-- METHOD 3: Journal Entries tab (where account_id exists) -->
+        <!-- Comment out this method initially, enable only if needed for journal entries
+        <record id="view_move_form_journal_lines_asset" model="ir.ui.view">
+            <field name="name">account.move.form.journal.lines.asset</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='aml_tab']//field[@name='line_ids']//field[@name='account_id']" position="after">
+                    <field name="asset_category_id"
+                           string="Asset Category"
+                           domain="[('type', '=', 'purchase')]"
+                           context="{'default_type': 'purchase'}"
+                           optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+        -->
+
+        <!-- METHOD 4: Direct model inheritance (safest approach) -->
+        <!-- Uncomment this if you want asset category in move line form
+        <record id="view_account_move_line_form_inherit_asset" model="ir.ui.view">
+            <field name="name">account.move.line.form.asset.category</field>
+            <field name="model">account.move.line</field>
+            <field name="inherit_id" ref="account.view_move_line_form"/>
+            <field name="arch" type="xml">
+                <field name="partner_id" position="after">
+                    <field name="asset_category_id"
+                           string="Asset Category"
+                           domain="[('type', '=', 'purchase')]"
+                           context="{'default_type': 'purchase'}"
+                           invisible="move_type not in ('in_invoice', 'in_receipt')"
+                           groups="account.group_account_user"/>
+                </field>
+            </field>
+        </record>
+        -->
+    </data>
+</odoo>

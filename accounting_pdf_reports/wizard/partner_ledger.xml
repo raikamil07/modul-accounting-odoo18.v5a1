@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Partner Ledger View -->
+        <record id="account_report_partner_ledger_view" model="ir.ui.view">
+            <field name="name">Partner Ledger</field>
+            <field name="model">account.report.partner.ledger</field>
+            <field name="inherit_id" ref="accounting_pdf_reports.account_common_report_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='journal_ids']" position="before">
+                    <field name="partner_ids" widget="many2many_tags"
+                           options="{'no_open': True, 'no_create': True}"/>
+                </xpath>
+                <xpath expr="//field[@name='target_move']" position="after">
+                    <field name="result_selection"/>
+                    <field name="reconciled"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Action for Menu -->
+        <record id="action_account_partner_ledger_menu" model="ir.actions.act_window">
+            <field name="name">Partner Ledger</field>
+            <field name="res_model">account.report.partner.ledger</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="account_report_partner_ledger_view"/>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="account.model_account_account"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Menu Item -->
+        <menuitem id="menu_partner_ledger"
+                  name="Partner Ledger"
+                  sequence="5"
+                  parent="menu_finance_partner_reports"
+                  action="action_account_partner_ledger_menu"
+                  groups="account.group_account_invoice"/>
+
+        <!-- Server Action for Partner Print Button (Main Method) -->
+        <record id="server_action_partner_ledger_access_check" model="ir.actions.server">
+            <field name="name">Partner Ledger Report</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="binding_model_id" ref="base.model_res_partner"/>
+            <field name="binding_type">action</field>
+            <field name="state">code</field>
+            <field name="code">
+if env.user.has_group('account.group_account_invoice'):
+    action = {
+        'type': 'ir.actions.act_window',
+        'name': 'Balance Statement (Partner Ledger)',
+        'res_model': 'account.report.partner.ledger',
+        'view_mode': 'form',
+        'target': 'new',
+        'view_id': env.ref('accounting_pdf_reports.account_report_partner_ledger_view').id,
+        'context': {
+            'default_partner_ids': env.context.get('active_ids', []),
+            'default_target_move': 'posted',
+            'default_result_selection': 'customer_supplier',
+            'default_reconciled': True,
+            'hide_partner': 1,
+        }
+    }
+else:
+    raise odoo.exceptions.AccessError('You do not have permission to access Partner Ledger reports.')
+            </field>
+        </record>
+
+        <!-- Alternative Action for Partner Print Button (Fallback) -->
+        <record id="action_partner_report_partnerledger" model="ir.actions.act_window">
+            <field name="name">Balance Statement (Partner Ledger)</field>
+            <field name="res_model">account.report.partner.ledger</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="account_report_partner_ledger_view"/>
+            <field name="target">new</field>
+            <field name="context">{
+                'default_target_move': 'posted',
+                'default_result_selection': 'customer_supplier',
+                'default_reconciled': True,
+                'hide_partner': 1,
+            }</field>
+        </record>
+
+    </data>
+</odoo>
