@@ -1,0 +1,1 @@
+# modul-accounting-odoo18.v5a1
